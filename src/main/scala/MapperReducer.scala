@@ -1,9 +1,9 @@
 import com.typesafe.config.{Config, ConfigFactory}
-import com.ragavee.Job1.{Job1Mapper, Job1Reducer}
+import com.ragavee.Job1.{Job1Mapper, Job1Partitioner, Job1Reducer}
 import com.ragavee.{Job1, Job2, Job3, Job4}
-import com.ragavee.Job2.{Task2Mapper, Task2Mapper1, Task2Reducer, Task2Reducer1}
-import com.ragavee.Job3.{Job3Mapper, Job3Reducer}
-import com.ragavee.Job4.{Job4Mapper, Job4Reducer}
+import com.ragavee.Job2.{Job2Partitioner, Task2Mapper, Task2Mapper1, Task2Reducer, Task2Reducer1}
+import com.ragavee.Job3.{Job3Mapper, Job3Partitioner, Job3Reducer}
+import com.ragavee.Job4.{Job4Mapper, Job4Partitioner, Job4Reducer}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{DoubleWritable, IntWritable, Text}
@@ -16,24 +16,22 @@ import org.slf4j.{Logger, LoggerFactory}
 
 /**
  *
- * This class contains the Map/Reduce driver for all the tasks assigned.
+ * This class contains the Map/Reduce driver for all the jobs assigned.
  *
  * The jobs implemented are as follows:
- * - Top 10 publishers at each venue (job1)
- * - List of authors who published without interruption for 10 consecutiveYears (job2)
- * - List of publications that contains only one author (job3)
- * - List of publications for each venue that contain the highest number of authors for each of the venues (job4)
- * - Top 100 authors with most number of Co-Authors (job5)
- * - Top 100 authors with most number of Co-Authors in descending order(job5a)
- * - Top 100 authors with no Co-Authors (job5b)
- *
+ * - Job1 - the distribution of different types of messages across predefined time intervals
+ *            and injected string instances of the designated regex pattern for these log message types
+ * - Job2 -  time intervals sorted in the descending order that
+ *          contained most log messages of the type ERROR with injected regex pattern string instances.
+ * - Job3 -  each message type you will produce the number of the generated log messages.
+ * - Job4 - List the number of characters in each log message for each log message type that contain
+ *          the highest number of characters in the detected instances of the designated regex pattern.
  */
 class MapperReducer
 
 object MapperReducer {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
-//  val logger : Logger = LoggerFactory
   val conf: Config = ConfigFactory.load("application.conf")
 
   val inputFile: String = conf.getString("configuration.inputFile")
@@ -55,83 +53,106 @@ object MapperReducer {
     val job2Name = conf.getString("configuration.job2")
     val job3Name = conf.getString("configuration.job3")
     val job4Name = conf.getString("configuration.job4")
+    val job2aName = conf.getString("configuration.job2a")
 
     /**
-     * Job 1 - spreadsheet or an CSV file that shows top ten published authors at each venue
+     * Job 1 - spreadsheet or an CSV file that list the number of type of messages in the predefined time interval
      */
+    logger.info("--- Job 1 Starting---")
     val job1: Job = Job.getInstance(configure, job1Name)
     job1.setJarByClass(classOf[Job1])
     job1.setMapperClass(classOf[Job1Mapper])
     job1.setCombinerClass(classOf[Job1Reducer])
+    job1.setPartitionerClass(classOf[Job1Partitioner])
+    job1.setNumReduceTasks(2)
     job1.setReducerClass(classOf[Job1Reducer])
     job1.setOutputKeyClass(classOf[Text]);
     job1.setOutputValueClass(classOf[IntWritable]);
     job1.setOutputFormatClass(classOf[TextOutputFormat[Text, IntWritable]])
     FileInputFormat.addInputPath(job1, new Path(inputFile))
     FileOutputFormat.setOutputPath(job1, new Path((outputFile + "/" + job1Name)))
-
+    job1.waitForCompletion(true)
 
     /**
-     * Job 2 - list of authors who published without interruption for N consecutiveYears where 10 <= N
+     * Job 2 - CSV file which displays list of number of ERROR type messages in the descending order
      */
     val job2: Job = Job.getInstance(configure, job2Name)
+    logger.info("--- JOb1 Completed Successfully--")
+
+    logger.info("--- Job 2 Starting---")
+
     job2.setJarByClass(classOf[Job2])
     job2.setMapperClass(classOf[Task2Mapper])
     job2.setCombinerClass(classOf[Task2Reducer])
+    job2.setPartitionerClass(classOf[Job2Partitioner])
+    job2.setNumReduceTasks(2)
     job2.setReducerClass(classOf[Task2Reducer])
     job2.setOutputKeyClass(classOf[Text])
     job2.setOutputValueClass(classOf[IntWritable])
     job2.setOutputFormatClass(classOf[TextOutputFormat[Text, IntWritable]])
     FileInputFormat.addInputPath(job2, new Path(inputFile))
     FileOutputFormat.setOutputPath(job2, new Path((outputFile + "/" + job2Name)))
-    if(job2.waitForCompletion(true)){
-      val configuration1 = new Configuration
-      val job2a = Job.getInstance(configuration1,"word count")
-      job2a.setJarByClass(classOf[Job2])
-      job2a.setMapperClass(classOf[Task2Mapper1])
-      job2a.setReducerClass(classOf[Task2Reducer1])
-      job2a.setOutputKeyClass(classOf[Text])
-      job2a.setOutputValueClass(classOf[IntWritable]);
-      FileInputFormat.addInputPath(job2, new Path(outputFile + "/" + job2Name))
-      FileOutputFormat.setOutputPath(job2, new Path(outputFile + "/" + job2Name+"a"))
+    job2.waitForCompletion(true)
 
-    }
+    val configuration1 = new Configuration
+    configuration1.set("mapred.textoutputformat.separator", ",")
+    val job2a = Job.getInstance(configuration1,job2Name)
+    logger.info("--- Completed First MapReduce of JOb 2--Unsorted list---")
+
+    logger.info("--- Started Second MapReduce of Job 2---")
+
+    job2a.setJarByClass(classOf[Job2])
+    job2a.setMapperClass(classOf[Task2Mapper1])
+    job2a.setReducerClass(classOf[Task2Reducer1])
+    job2a.setMapOutputKeyClass(classOf[IntWritable])
+    job2a.setMapOutputValueClass(classOf[Text])
+    job2a.setOutputKeyClass(classOf[Text])
+    job2a.setOutputValueClass(classOf[IntWritable]);
+    FileInputFormat.addInputPath(job2a, new Path(outputFile + "/" + job2Name))
+    FileOutputFormat.setOutputPath(job2a, new Path(outputFile + "/" + job2aName))
+    job2a.waitForCompletion(true)
+    logger.info("--- Job 2 Completed Successfully--")
     /**
-     * Job 3 - List of publications that contains only one author
+     * Job 3 - each message type you will produce the number of the generated log messages.
      */
+
+    logger.info("--- Job 3 Starting---")
     val job3: Job = Job.getInstance(configure, job3Name)
     job3.setJarByClass(classOf[Job3])
     job3.setMapperClass(classOf[Job3Mapper])
     job3.setCombinerClass(classOf[Job3Reducer])
+    job3.setPartitionerClass(classOf[Job3Partitioner])
+    job3.setNumReduceTasks(2)
     job3.setReducerClass(classOf[Job3Reducer])
     job3.setOutputKeyClass(classOf[Text])
     job3.setOutputValueClass(classOf[IntWritable])
     job3.setOutputFormatClass(classOf[TextOutputFormat[Text, IntWritable]])
     FileInputFormat.addInputPath(job3, new Path(inputFile))
     FileOutputFormat.setOutputPath(job3, new Path((outputFile + "/" + job3Name)))
-
+    job3.waitForCompletion(true)
+    logger.info("--- Job 3 Completed Successfully--")
     /**
-     * Job 4 - List of publications for each venue that contain the highest number of authors for each of these venues
+     * Job 4 - List the number of characters in each message for each type that contain
+     *          the highest number of characters in the detected instances of the designated regex pattern.
      */
+    logger.info("--- Job 4 Starting---")
     val job4: Job = Job.getInstance(configure, job4Name)
     job4.setJarByClass(classOf[Job4])
     job4.setMapperClass(classOf[Job4Mapper])
     job4.setCombinerClass(classOf[Job4Reducer])
+    job4.setPartitionerClass(classOf[Job4Partitioner])
+    job4.setNumReduceTasks(2)
     job4.setReducerClass(classOf[Job4Reducer])
     job4.setOutputKeyClass(classOf[Text])
     job4.setOutputValueClass(classOf[IntWritable])
     job4.setOutputFormatClass(classOf[TextOutputFormat[Text, IntWritable]])
     FileInputFormat.addInputPath(job4, new Path(inputFile))
     FileOutputFormat.setOutputPath(job4, new Path((outputFile + "/" + job4Name)))
+    job4.waitForCompletion(true)
+    logger.info("--- Job 4 Completed Successfully--")
 
-
-    if (job1.waitForCompletion(verbose) && job2.waitForCompletion(verbose) && job3.waitForCompletion(verbose) && job4.waitForCompletion(verbose)) {
       val endTime = System.nanoTime
       val totalTime = endTime - startTime
       logger.info("--- SUCCESSFULLY COMPLETED (Execution completed in: " + totalTime / 1_000_000_000 + " sec) ---")
-    }
-    else {
-      logger.info("--- UNFORTUNATELY FAILED ---")
-    }
   }
 }

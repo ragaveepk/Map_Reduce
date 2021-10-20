@@ -1,8 +1,8 @@
 package com.ragavee
 
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.io.{IntWritable, Text}
-
-import org.apache.hadoop.mapreduce.{Mapper, Reducer}
+import org.apache.hadoop.mapreduce.{Mapper, Partitioner, Reducer}
 
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -10,9 +10,13 @@ import scala.util.matching.Regex
 import scala.jdk.CollectionConverters._
 import java.lang.Iterable
 
+/**
+ * This class denotes the mapper  and reducer classes to obtain the list the number of type of messages in the predefined time interval.
+ **/
 class Job1
 
 object Job1 {
+  val conf: Config = ConfigFactory.load("application.conf")
   class Job1Mapper extends Mapper[Object, Text, Text, IntWritable] {
 
     val one = new IntWritable(1)
@@ -22,18 +26,25 @@ object Job1 {
                      value: Text,
                      context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
 
-      val keyValPattern: Regex = "(^\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s\\[([^\\]]*)\\]\\s(WARN|INFO|DEBUG|ERROR)\\s+([A-Z][A-Za-z\\.]+)\\$\\s-\\s(.*)".r
+      val RegexPattern: Regex = conf.getString("configuration.keyValPattern").r
+      val injected_pattern  : Regex = conf.getString("configuration.injected_pattern").r
+
       val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+      val startTime = LocalTime.parse(conf.getString("configuration.startTime"), formatter)
+      val endTime = LocalTime.parse(conf.getString("configuration.endTime"), formatter)
 
-      val startTime = LocalTime.parse("19:55:33.412", formatter)
-      val endTime = LocalTime.parse("20:11:06.281", formatter)
+      val matchPattern = RegexPattern.findFirstMatchIn(value.toString)
 
-      val patternMatch = keyValPattern.findFirstMatchIn(value.toString)
-      patternMatch.toList.map(x => {
-        val time = LocalTime.parse(x.group(1), formatter)
-        if (startTime.isBefore(time) && endTime.isAfter(time)) {
-          word.set(x.group(3))
-          context.write(word, one)
+      matchPattern.toList.map(x => {
+        injected_pattern.findFirstMatchIn(x.group(5)) match {
+          case Some(_) => {
+            val time = LocalTime.parse(x.group(1), formatter)
+            if (startTime.isBefore(time) && endTime.isAfter(time)) {
+              word.set(x.group(3))
+              context.write(word, one)
+            }
+          }
+          case None => { }
         }
       })
     }
@@ -42,23 +53,20 @@ object Job1 {
   class Job1Reducer extends Reducer[Text, IntWritable, Text, IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable],
                         context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
-      var sum = values.asScala.foldLeft(0)(_ + _.get)
+      val sum = values.asScala.foldLeft(0)(_ + _.get)
       context.write(key, new IntWritable(sum))
     }
   }
 
-//  def main(args: Array[String]): Unit = {
-//    val configuration = new Configuration()
-//    val job = Job.getInstance(configuration, "job1")
-//    job.setJarByClass(this.getClass)
-//    job.setMapperClass(classOf[Job1Mapper])
-//    job.setCombinerClass(classOf[Job1Reducer])
-//    job.setReducerClass(classOf[Job1Reducer])
-//    job.setOutputKeyClass(classOf[Text])
-//    job.setOutputValueClass(classOf[IntWritable])
-//    FileInputFormat.addInputPath(job, new Path(args(0)))
-//    FileOutputFormat.setOutputPath(job, new Path(args(1)))
-//    System.exit(if (job.waitForCompletion(true)) 0 else 1)
-//  }
+  class Job1Partitioner extends Partitioner[Text, IntWritable] {
+    override def getPartition(key: Text, value: IntWritable, numReduceTasks: Int): Int = {
+
+      if (key.toString == "INFO") {
+        return 1 % numReduceTasks
+      }
+      return 0
+    }
+  }
+
 }
 
