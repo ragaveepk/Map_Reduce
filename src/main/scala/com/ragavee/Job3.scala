@@ -18,17 +18,20 @@ class Job3
 object Job3
 {
   class Job3Mapper extends Mapper[Object, Text, Text, IntWritable] {
+
     val conf: Config = ConfigFactory.load("application.conf")
+    val GROUP_THREE = conf.getInt("configuration.GROUP_THREE")
     val one = new IntWritable(1)
     val word = new Text()
 
+
     override def map(key: Object,value: Text,context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
 
-      val RegexPattern: Regex = conf.getString("configuration.keyValPattern").r
-      val matchPattern =  RegexPattern.findFirstMatchIn(value.toString)
+      val regexPattern: Regex = conf.getString("configuration.keyValPattern").r
+      val matchPattern =  regexPattern.findFirstMatchIn(value.toString)
 
       matchPattern.toList.map(x => {
-        word.set(x.group(3))
+        word.set(x.group(GROUP_THREE))
         context.write(word, one)
       })
     }
@@ -37,8 +40,8 @@ object Job3
   class Job3Reducer extends Reducer[Text, IntWritable, Text, IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable],
                         context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
-      val sum = values.asScala.foldLeft(0)(_ + _.get)
-      context.write(key, new IntWritable(sum))
+      val finalVal = values.asScala.foldLeft(0)(_ + _.get)
+      context.write(key, new IntWritable(finalVal))
     }
   }
   class Job3Partitioner extends Partitioner[Text, IntWritable] {

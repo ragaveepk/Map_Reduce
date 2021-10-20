@@ -1,7 +1,7 @@
 import com.typesafe.config.{Config, ConfigFactory}
 import com.ragavee.Job1.{Job1Mapper, Job1Partitioner, Job1Reducer}
 import com.ragavee.{Job1, Job2, Job3, Job4}
-import com.ragavee.Job2.{Job2Partitioner, Task2Mapper, Task2Mapper1, Task2Reducer, Task2Reducer1}
+import com.ragavee.Job2.{Job2Partitioner, Job2Mapper, Job2Mapper1, Job2Reducer, Job2Reducer1}
 import com.ragavee.Job3.{Job3Mapper, Job3Partitioner, Job3Reducer}
 import com.ragavee.Job4.{Job4Mapper, Job4Partitioner, Job4Reducer}
 import org.apache.hadoop.conf.Configuration
@@ -37,7 +37,6 @@ object MapperReducer {
   val inputFile: String = conf.getString("configuration.inputFile")
   val outputFile: String = conf.getString("configuration.outputFile")
   val verbose: Boolean = true
-//  val consecutiveYearsOfPublishing: Int = conf.getInt("configuration.consecutiveYears")
 
   def main(args: Array[String]): Unit = {
     val startTime = System.nanoTime
@@ -82,11 +81,11 @@ object MapperReducer {
     logger.info("--- Job 2 Starting---")
 
     job2.setJarByClass(classOf[Job2])
-    job2.setMapperClass(classOf[Task2Mapper])
-    job2.setCombinerClass(classOf[Task2Reducer])
+    job2.setMapperClass(classOf[Job2Mapper])
+    job2.setCombinerClass(classOf[Job2Reducer])
     job2.setPartitionerClass(classOf[Job2Partitioner])
     job2.setNumReduceTasks(2)
-    job2.setReducerClass(classOf[Task2Reducer])
+    job2.setReducerClass(classOf[Job2Reducer])
     job2.setOutputKeyClass(classOf[Text])
     job2.setOutputValueClass(classOf[IntWritable])
     job2.setOutputFormatClass(classOf[TextOutputFormat[Text, IntWritable]])
@@ -102,8 +101,8 @@ object MapperReducer {
     logger.info("--- Started Second MapReduce of Job 2---")
 
     job2a.setJarByClass(classOf[Job2])
-    job2a.setMapperClass(classOf[Task2Mapper1])
-    job2a.setReducerClass(classOf[Task2Reducer1])
+    job2a.setMapperClass(classOf[Job2Mapper1])
+    job2a.setReducerClass(classOf[Job2Reducer1])
     job2a.setMapOutputKeyClass(classOf[IntWritable])
     job2a.setMapOutputValueClass(classOf[Text])
     job2a.setOutputKeyClass(classOf[Text])
@@ -112,6 +111,7 @@ object MapperReducer {
     FileOutputFormat.setOutputPath(job2a, new Path(outputFile + "/" + job2aName))
     job2a.waitForCompletion(true)
     logger.info("--- Job 2 Completed Successfully--")
+
     /**
      * Job 3 - each message type you will produce the number of the generated log messages.
      */

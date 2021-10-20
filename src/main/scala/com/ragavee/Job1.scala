@@ -19,29 +19,30 @@ object Job1 {
   val conf: Config = ConfigFactory.load("application.conf")
   class Job1Mapper extends Mapper[Object, Text, Text, IntWritable] {
 
-    val one = new IntWritable(1)
-    val word = new Text()
+    val key_value = new IntWritable(1)
+    val KEY = new Text()
+    val GROUP_ONE = conf.getInt("configuration.GROUP_ONE")
+    val GROUP_THREE = conf.getInt("configuration.GROUP_THREE")
 
-    override def map(key: Object,
-                     value: Text,
-                     context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
+    override def map(key: Object,value: Text,context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
 
-      val RegexPattern: Regex = conf.getString("configuration.keyValPattern").r
-      val injected_pattern  : Regex = conf.getString("configuration.injected_pattern").r
+      val regexPattern: Regex = conf.getString("configuration.keyValPattern").r
+      val injectedPattern  : Regex = conf.getString("configuration.injected_pattern").r
 
-      val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
-      val startTime = LocalTime.parse(conf.getString("configuration.startTime"), formatter)
-      val endTime = LocalTime.parse(conf.getString("configuration.endTime"), formatter)
 
-      val matchPattern = RegexPattern.findFirstMatchIn(value.toString)
+      val dateFormat = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+      val startTime = LocalTime.parse(conf.getString("configuration.startTime"), dateFormat)
+      val endTime = LocalTime.parse(conf.getString("configuration.endTime"), dateFormat)
 
-      matchPattern.toList.map(x => {
-        injected_pattern.findFirstMatchIn(x.group(5)) match {
+      val Pattern = regexPattern.findFirstMatchIn(value.toString)
+
+      Pattern.toList.map(x => {
+        injectedPattern.findFirstMatchIn(x.group(5)) match {
           case Some(_) => {
-            val time = LocalTime.parse(x.group(1), formatter)
+            val time = LocalTime.parse(x.group(GROUP_ONE), dateFormat)
             if (startTime.isBefore(time) && endTime.isAfter(time)) {
-              word.set(x.group(3))
-              context.write(word, one)
+              KEY.set(x.group(GROUP_THREE))
+              context.write(KEY, key_value)
             }
           }
           case None => { }
@@ -53,8 +54,9 @@ object Job1 {
   class Job1Reducer extends Reducer[Text, IntWritable, Text, IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable],
                         context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
-      val sum = values.asScala.foldLeft(0)(_ + _.get)
-      context.write(key, new IntWritable(sum))
+
+      val finalVal = values.asScala.foldLeft(0)(_ + _.get)
+      context.write(key, new IntWritable(finalVal))
     }
   }
 

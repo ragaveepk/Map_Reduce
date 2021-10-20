@@ -17,21 +17,23 @@ class Job2
 
 object Job2 {
 
-  class Task2Mapper extends Mapper[Object, Text, Text, IntWritable] {
+  class Job2Mapper extends Mapper[Object, Text, Text, IntWritable] {
+
     val conf: Config = ConfigFactory.load("application.conf")
     val one = new IntWritable(1)
     val word = new Text()
+    val GROUP_ONE = conf.getInt("configuration.GROUP_ONE")
 
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
 
-     val RegexPattern: Regex = conf.getString("configuration.keyValPattern").r
-     val injected_pattern  : Regex = conf.getString("configuration.injected_pattern").r
-      val matchPattern = RegexPattern.findAllMatchIn(value.toString)
+     val regexPattern: Regex = conf.getString("configuration.keyValPattern").r
+     val injectedPattern  : Regex = conf.getString("configuration.injected_pattern").r
+      val matchPattern = regexPattern.findAllMatchIn(value.toString)
 
       matchPattern.toList.map(x => {
-        injected_pattern.findFirstMatchIn(x.group(5)) match {
+        injectedPattern.findFirstMatchIn(x.group(5)) match {
           case Some(_) => {
-            word.set(x.group(1).split(":")(0))
+            word.set(x.group(GROUP_ONE).split(":")(0))
             context.write(word,one)
           }
           case None => { }
@@ -40,14 +42,15 @@ object Job2 {
     }
   }
 
-  class Task2Reducer extends Reducer[Text,IntWritable,Text,IntWritable] {
+  class Job2Reducer extends Reducer[Text,IntWritable,Text,IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable], context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
-      val sum = values.asScala.foldLeft(0)(_ + _.get())
-      context.write(key, new IntWritable(sum))
+
+      val finalVal = values.asScala.foldLeft(0)(_ + _.get())
+      context.write(key, new IntWritable(finalVal))
     }
   }
 
-  class Task2Mapper1 extends Mapper[Object, Text, IntWritable, Text] {
+  class Job2Mapper1 extends Mapper[Object, Text, IntWritable, Text] {
 
     override def map(key: Object, value: Text, context: Mapper[Object, Text, IntWritable, Text]#Context): Unit = {
 
@@ -58,9 +61,12 @@ object Job2 {
     }
   }
 
-  class Task2Reducer1 extends Reducer[IntWritable,Text,Text,IntWritable] {
+  class Job2Reducer1 extends Reducer[IntWritable,Text,Text,IntWritable] {
     override def reduce(key: IntWritable, values: Iterable[Text], context: Reducer[IntWritable, Text, Text, IntWritable]#Context): Unit = {
-      values.asScala.foreach(value => context.write(value, new IntWritable(key.get() * -1)))
+
+      values.asScala.foreach(value =>
+        context.write(value, new IntWritable(key.get() * -1))
+      )
     }
   }
 
