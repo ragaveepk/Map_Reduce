@@ -3,8 +3,8 @@
 ## Introduction
 This homework consists in creating different map/reduce jobs in order to produce various statistics . The hadoop framework has been extensively used as part of this homework Scala language.
 
-Introduction video : [https://youtu.be/arOgO3_KsV4](https://youtu.be/arOgO3_KsV4)
-AWS Deployment video -[https://youtu.be/VQ_nMnA67Ls](https://youtu.be/VQ_nMnA67Ls)
+##AWS Deployment
+AWS Deployment video - [https://youtu.be/e-YMkHRLZfA](https://youtu.be/e-YMkHRLZfA)
 
 ##Documentation
 After Cloning the project , please find the Scaladoc documentation in docs folder.
@@ -81,9 +81,6 @@ Please follow these steps:
 
 16) You can download the output files to your local system using scp -P 2222 -r root@192.168.245.129:/root/output <local_path>
 
-17) Please find the output files of the jobs under "output_directory" folder
-
-
 ## Map-Reduce Jobs
 
 As part of this homework a total of  map/reduce jobs were created. The association between the classes involved and each job is clearly listed in the MapReduceJobsDriver class.
@@ -111,7 +108,6 @@ The Partitioner class  has been written each job class which takes place after M
 - It divides the data according to the number of partitioner (# of partitioner  = # of reducers)
 -In this project, Input key value paired data can be divided into 2 parts based on Message type 
 
-- 
 
 ## Output
 

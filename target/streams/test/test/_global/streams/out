@@ -1,20 +1,17 @@
-[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(Test, org.scalatest.tools.Framework$$anon$1@51f1001b, false, [SuiteSelector])[0m
-[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(Test2, org.scalatest.tools.Framework$$anon$1@51f1001b, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(Test2, org.scalatest.tools.Framework$$anon$1@6df78581, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(Test, org.scalatest.tools.Framework$$anon$1@6df78581, false, [SuiteSelector])[0m
 [0m[[0m[0minfo[0m] [0m[0m[32mTest:[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[32m- Test the correctness of name of the job from application config[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[32mTest2:[0m[0m
-[0m[[0m[0minfo[0m] [0m[0m[31m- should Check start and end time *** FAILED ***[0m[0m
-[0m[[0m[0minfo[0m] [0m[0m[31m  19:55:33.412 equaled 19:55:33.412, but 23:50:06.281 did not equal 20:11:06.281 (Test1.scala:40)[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should Check start and end time[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[32m- should Checks if the  combiner class has been set and compare[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[32m- should Checks if the mapper class has been set and compare[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[32m- should check  if the test_msg matches the regex pattern[0m[0m
-[0m[[0m[0minfo[0m] [0m[0m[36mRun completed in 783 milliseconds.[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mRun completed in 1 second, 420 milliseconds.[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[36mTotal number of tests run: 5[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[36mSuites: completed 2, aborted 0[0m[0m
-[0m[[0m[0minfo[0m] [0m[0m[36mTests: succeeded 4, failed 1, canceled 0, ignored 0, pending 0[0m[0m
-[0m[[0m[0minfo[0m] [0m[0m[31m*** 1 TEST FAILED ***[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTests: succeeded 5, failed 0, canceled 0, ignored 0, pending 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mAll tests passed.[0m[0m
 [0m[[0m[0mdebug[0m] [0m[0mPassed tests:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Test2[0m
 [0m[[0m[0mdebug[0m] [0m[0m	Test[0m
-[0m[[0m[31merror[0m] [0m[0mFailed tests:[0m
-[0m[[0m[31merror[0m] [0m[0m	Test2[0m
-[0m[[0m[31merror[0m] [0m[0m(Test / [31mtest[0m) sbt.TestsFailedException: Tests unsuccessful[0m
