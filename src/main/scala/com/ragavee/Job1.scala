@@ -16,7 +16,9 @@ import java.lang.Iterable
 class Job1
 
 object Job1 {
+
   val conf: Config = ConfigFactory.load("application.conf")
+
   class Job1Mapper extends Mapper[Object, Text, Text, IntWritable] {
 
     val key_value = new IntWritable(1)
@@ -29,15 +31,17 @@ object Job1 {
       val regexPattern: Regex = conf.getString("configuration.keyValPattern").r
       val injectedPattern  : Regex = conf.getString("configuration.injected_pattern").r
 
-
       val dateFormat = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
       val startTime = LocalTime.parse(conf.getString("configuration.startTime"), dateFormat)
       val endTime = LocalTime.parse(conf.getString("configuration.endTime"), dateFormat)
 
       val Pattern = regexPattern.findFirstMatchIn(value.toString)
 
+// check whether the log message matches the injected string pattern if yes then checks the time is between the start and end time
+// and then writes as key, value pair
       Pattern.toList.map(x => {
-        injectedPattern.findFirstMatchIn(x.group(5)) match {
+        injectedPattern.findFirstMatchIn(x.group(5)) match
+        {
           case Some(_) => {
             val time = LocalTime.parse(x.group(GROUP_ONE), dateFormat)
             if (startTime.isBefore(time) && endTime.isAfter(time)) {
@@ -50,7 +54,7 @@ object Job1 {
       })
     }
   }
-
+//This is Reducer class where reduce function is overridden and the output of mapper is processed to get the final list of key-value pairs
   class Job1Reducer extends Reducer[Text, IntWritable, Text, IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable],
                         context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
@@ -60,9 +64,11 @@ object Job1 {
     }
   }
 
+// This Partitioner class  takes place after Map phase and before reduce phase.
+// It divides the data according to the number of partitioner ( # of partitioner  = # of reducers )
   class Job1Partitioner extends Partitioner[Text, IntWritable] {
     override def getPartition(key: Text, value: IntWritable, numReduceTasks: Int): Int = {
-
+  //input  key value paired data can be  divided into 2 parts based on message type
       if (key.toString == "INFO") {
         return 1 % numReduceTasks
       }

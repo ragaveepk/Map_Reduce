@@ -1,12 +1,10 @@
-import com.ragavee.Job3
 import com.ragavee.Job3.{Job3Mapper, Job3Reducer}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.BeforeAndAfter
 import org.slf4j.{Logger, LoggerFactory}
-import com.ragavee.Job3.Job3Reducer
-import com.ragavee.Job4.Job4Reducer
+import com.ragavee.Job4.{Job4Mapper}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.matchers.should.Matchers._
 import org.apache.hadoop.conf.Configuration
@@ -31,28 +29,29 @@ import java.time.format.DateTimeFormatter
   }
 
   class Test2 extends AnyFlatSpec with Matchers {
+
     val config = ConfigFactory.load("application.conf")
     it should "Check start and end time" in {
       val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
       val startTime = LocalTime.parse(config.getString("configuration.startTime"), formatter)
       val endTime = LocalTime.parse(config.getString("configuration.endTime"), formatter)
-      val startTime_test = LocalTime.parse("19:55:33.412", formatter)
-      val endTime_Test = LocalTime.parse("20:11:06.281", formatter)
+      val startTime_test = LocalTime .parse("19:55:33.412", formatter)
+      val endTime_Test = LocalTime.parse("23:50:06.281", formatter)
       assert(startTime ==  startTime_test && endTime == endTime_Test)
     }
 
-    it should "Checks if the reducer combiner class has been set and compare " in {
+    it should "Checks if the  combiner class has been set and compare " in {
       val configure: Configuration = new Configuration()
       val job3: Job = Job.getInstance(configure, "job3")
       job3.setCombinerClass(classOf[Job3Reducer])
       assert(job3.getCombinerClass() == classOf[Job3Reducer])
     }
 
-    it should "Checks if the mapper combiner class has been set and compare " in {
+    it should "Checks if the mapper class has been set and compare " in {
       val configure: Configuration = new Configuration()
       val job4: Job = Job.getInstance(configure, "job4")
-      job4.setMapperClass(classOf[Job3Mapper])
-      assert(job4.getMapperClass() == classOf[Job3Mapper])
+      job4.setMapperClass(classOf[Job4Mapper])
+      assert(job4.getMapperClass() == classOf[Job4Mapper])
     }
 
     it should(" check  if the test_msg matches the regex pattern") in {

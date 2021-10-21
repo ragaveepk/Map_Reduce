@@ -62,11 +62,11 @@ object MapperReducer {
     job1.setJarByClass(classOf[Job1])
     job1.setMapperClass(classOf[Job1Mapper])
     job1.setCombinerClass(classOf[Job1Reducer])
-    job1.setPartitionerClass(classOf[Job1Partitioner])
-    job1.setNumReduceTasks(2)
-    job1.setReducerClass(classOf[Job1Reducer])
     job1.setOutputKeyClass(classOf[Text]);
     job1.setOutputValueClass(classOf[IntWritable]);
+    job1.setPartitionerClass(classOf[Job1Partitioner])
+    job1.setNumReduceTasks(3)
+    job1.setReducerClass(classOf[Job1Reducer])
     job1.setOutputFormatClass(classOf[TextOutputFormat[Text, IntWritable]])
     FileInputFormat.addInputPath(job1, new Path(inputFile))
     FileOutputFormat.setOutputPath(job1, new Path((outputFile + "/" + job1Name)))
@@ -103,6 +103,7 @@ object MapperReducer {
     job2a.setJarByClass(classOf[Job2])
     job2a.setMapperClass(classOf[Job2Mapper1])
     job2a.setReducerClass(classOf[Job2Reducer1])
+    job2a.setNumReduceTasks(1)
     job2a.setMapOutputKeyClass(classOf[IntWritable])
     job2a.setMapOutputValueClass(classOf[Text])
     job2a.setOutputKeyClass(classOf[Text])
@@ -131,6 +132,7 @@ object MapperReducer {
     FileOutputFormat.setOutputPath(job3, new Path((outputFile + "/" + job3Name)))
     job3.waitForCompletion(true)
     logger.info("--- Job 3 Completed Successfully--")
+
     /**
      * Job 4 - List the number of characters in each message for each type that contain
      *          the highest number of characters in the detected instances of the designated regex pattern.
