@@ -3,10 +3,10 @@
 ## Introduction
 This homework consists in creating different map/reduce jobs in order to produce various statistics . The hadoop framework has been extensively used as part of this homework Scala language.
 
-##AWS Deployment
+## AWS Deployment
 AWS Deployment video - [https://youtu.be/e-YMkHRLZfA](https://youtu.be/e-YMkHRLZfA)
 
-##Documentation
+## Documentation
 After Cloning the project , please find the Scaladoc documentation in docs folder.
 
 ## Setup Requirements
