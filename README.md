@@ -33,7 +33,7 @@ Please follow the following steps to run the project
 A Jar file needs to be created so you can run the map/reduce jobs on a virtual machine that provides an Hadoop installation.
 Please follow these steps:
 
-1) Enter git clone https://github.com/ragaveepk/cs441_homework2.git
+1) Enter git clone https://github.com/ragaveepk/Map_Reduce.git
 
 2) Run the following command: "sbt clean compile assembly"
 
@@ -48,7 +48,7 @@ Please follow these steps:
 
 2) You may check by logging in the web panel and checking the status on the "Start services" task.
 
-3) Copy the jar file to the Sandbox by issuing the following command: "scp -P 2222 target/scala-2.13/Homework2.jar root@192.168.245.129:" 
+3) Copy the jar file to the Sandbox by issuing the following command: "scp -P 2222 target/scala-2.13/Map_reduce.jar root@192.168.245.129:" 
 - This IP address is basically to SSH into the active Hortonworks Sandbox session ,you can find it in the VMWare Workstation once the virtual machine with the sandbox is powered up
 
 4) Copy the LogfileGenerator to the Sandbox: "scp -P 2222 LogFileGenerator.2021-10-19.log root@192.168.245.129:"
@@ -60,7 +60,7 @@ Please follow these steps:
 7) Load the dataset on HDFS: hdfs dfs -put LogFileGenerator.2021-10-19.log input_directory/
   - Load the dataset on HDFS: hdfs dfs -put LogFileGenerator.2021-10-17.log input_directory/
 
-8) Now run: hadoop jar Homework2.jar
+8) Now run: hadoop jar Map_reduce.jar
 
 9) After completion the results are saved in a folder named output_directory on HDFS.
 
