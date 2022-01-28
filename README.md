@@ -1,10 +1,7 @@
-# CS 441  Homework 2
+# Map_Reduce
 
 ## Introduction
-This homework consists in creating different map/reduce jobs in order to produce various statistics . The hadoop framework has been extensively used as part of this homework Scala language.
-
-## AWS Deployment
-AWS Deployment video - [https://youtu.be/e-YMkHRLZfA](https://youtu.be/e-YMkHRLZfA)
+This project consists in creating different map/reduce jobs in order to produce various statistics . The hadoop framework has been extensively used as part of this work in Scala language.
 
 ## Documentation
 After Cloning the project , please find the Scaladoc documentation in docs folder.
